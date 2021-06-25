@@ -1,0 +1,15 @@
+{
+  "header": null,
+  "body": {
+    "request": null,
+    "response": {
+      "success": true,
+      "messages": null,
+      "data": {
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MjQ0MTQ0MjUzMDEsImlzcyI6IldTUDQwMDkifQ.m5DJ3xuepb3IreOkFTfzY_CcSfvG4DT_uLO5zLzHF1U"
+      },
+      "objectDTO": null,
+      "time": "542 miliseconds"
+    }
+  }
+}

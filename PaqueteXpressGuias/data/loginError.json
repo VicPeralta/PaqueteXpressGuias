@@ -1,0 +1,19 @@
+{
+  "header": null,
+  "body": {
+    "request": null,
+    "response": {
+      "success": false,
+      "messages": [
+        {
+          "code": "401",
+          "description": "Error: Usuario o password inválido",
+          "typeError": "ERROR"
+        }
+      ],
+      "data": null,
+      "objectDTO": null,
+      "time": "477 miliseconds"
+    }
+  }
+}

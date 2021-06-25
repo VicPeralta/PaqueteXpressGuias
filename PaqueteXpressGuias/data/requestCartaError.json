@@ -1,0 +1,19 @@
+{
+  "header": null,
+  "body": {
+    "request": null,
+    "response": {
+      "success": false,
+      "messages": [
+        {
+          "code": "500",
+          "description": "The Token has expired on Tue Jun 22 17:31:38 MDT 2021.",
+          "typeError": "ERROR"
+        }
+      ],
+      "data": null,
+      "objectDTO": null,
+      "time": "106.0 miliseconds"
+    }
+  }
+}

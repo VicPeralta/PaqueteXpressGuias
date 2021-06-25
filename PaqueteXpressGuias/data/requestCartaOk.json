@@ -1,0 +1,24 @@
+{
+  "header": {
+    "security": null,
+    "device": {
+      "appName": null,
+      "type": null,
+      "ip": "qa-Barracuda",
+      "idDevice": null
+    },
+    "target": null,
+    "output": null,
+    "language": null
+  },
+  "body": {
+    "request": null,
+    "response": {
+      "success": true,
+      "messages": null,
+      "data": "21166982720",
+      "objectDTO": "folioLetterPorte:MEX01WE0048478",
+      "time": "15844.0 miliseconds"
+    }
+  }
+}

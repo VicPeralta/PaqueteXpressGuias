@@ -1,0 +1,100 @@
+{
+  "header": {
+    "security": {
+      "user": "WSP4009",
+      "password": "MTIzNA==",
+      "type": 0,
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MjQ0MDQ2OTg5MDcsImlzcyI6IldTUDQwMDkifQ.YEAHFUF-fl8LCv4h3oETSRkA1E7nCF0C8qvNunUpSFI"
+    }
+  },
+  "body": {
+    "request": {
+      "data": [
+        {
+          "billRad": "REQUEST",
+          "billClntId": "16350707",
+          "pymtMode": "PAID",
+          "pymtType": "C",
+          "comt": "",
+          "radGuiaAddrDTOList": [
+            {
+              "addrLin1": "MEXICO",
+              "addrLin3": "CIUDAD DE MEXICO",
+              "addrLin4": "CIUDAD DE MEXICO",
+              "addrLin5": "VENUSTIANO CARRANZA",
+              "addrLin6": "BENITO JUAREZ",
+              "strtName": "AV CAPITAN CARLOS LEÓN",
+              "drnr": "S/N",
+              "phno1": "454848484",
+              "zipCode": "15620",
+              "clntName": "CLIENTE PRUEBA",
+              "email": "pruebas@paquetexpress.com.mx",
+              "contacto": "Jose Clemente Lopez",
+              "addrType": "ORIGIN"
+            },
+            {
+              "addrLin1": "México",
+              "addrLin3": "Chihuahua",
+              "addrLin4": "Las Delicias",
+              "addrLin5": "Las Delicias",
+              "addrLin6": "Col. Puente de Cantera ",
+              "strtName": "Fracc. Puente de Alcantara ",
+              "drnr": "9562",
+              "phno1": "6391287101",
+              "zipCode": "33000 ",
+              "clntName": "CARDENAS GAXIOLA EDGAR EDUARDO ",
+              "email": "evillegas@paquetexpress.com.mx",
+              "contacto": "Fernanda aragon ",
+              "addrType": "DESTINATION"
+            }
+          ],
+          "radSrvcItemDTOList": [
+            {
+              "srvcId": "PACKETS",
+              "weight": "2",
+              "volL": "30",
+              "volW": "20",
+              "volH": "40",
+              "cont": "Vestido ",
+              "qunt": "1"
+            },
+            {
+              "srvcId": "PACKETS",
+              "weight": "2",
+              "volL": "10",
+              "volW": "20",
+              "volH": "30",
+              "cont": "Pantalones ",
+              "qunt": "2"
+            }
+          ],
+          "listSrvcItemDTO": [
+            {
+              "srvcId": "EAD",
+              "value1": ""
+            },
+            {
+              "srvcId": "RAD",
+              "value1": ""
+            },
+            {
+              "srvcId": "INV",
+              "value1": "1000"
+            }
+          ],
+          "typeSrvcId": "SEG-2D",
+          "listRefs": [
+            {
+              "grGuiaRefr": "5512345678"
+            },
+            {
+              "grGuiaRefr": "12345"
+            }
+          ]
+        }
+      ],
+      "objectDTO": null
+    },
+    "response": null
+  }
+}

@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "HTTPRequester.h"
 
+
 HTTPRequester::HTTPRequester(const std::string url) : m_url{url}{}
 
 HTTPRequester::HTTPRequester(const std::string url, unsigned short port) : m_url{ url }, m_port{ port }{}
@@ -23,6 +24,11 @@ void HTTPRequester::setContentType(const std::string& contentType)
 void HTTPRequester::setRequestType(RequestType type)
 {
 	m_requestType = type;
+}
+
+std::string HTTPRequester::getReasonForStatus(Poco::Net::HTTPResponse::HTTPStatus status)
+{
+	return Poco::Net::HTTPResponse::getReasonForStatus(status);
 }
 
 Poco::Net::HTTPResponse::HTTPStatus HTTPRequester::Request(std::string& response,bool verbose)
@@ -61,6 +67,11 @@ Poco::Net::HTTPResponse::HTTPStatus HTTPRequester::Request(std::string& response
 			responseBody.append(buffer, streamResponse.gcount());
 		};
 		response = std::move(responseBody);
+	}
+	catch (Poco::Exception& ex) {
+		std::string message{ "Error de red " };
+		message += ex.displayText();
+		throw std::exception(message.c_str());
 	}
 	catch (std::exception& ex) {
 		throw ex;

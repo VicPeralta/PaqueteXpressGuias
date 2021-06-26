@@ -26,6 +26,7 @@ public:
 	void setContent(const std::string&);
 	void setContentType(const std::string&);
 	void setRequestType(RequestType type);
+	static std::string getReasonForStatus(Poco::Net::HTTPResponse::HTTPStatus status);
 	Poco::Net::HTTPResponse::HTTPStatus Request(std::string& response, bool verbose = false);
 };
 

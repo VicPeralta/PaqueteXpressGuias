@@ -1,0 +1,8 @@
+{
+  "urlLogin": "http://qaglp.paquetexpress.mx:7007/RadRestFul/api/rad/loginv1/login",
+  "urlCarta": "http://qaglp.paquetexpress.mx:7007/RadRestFul/api/rad/v1/guia",
+  "urlPDF": "http://qaglp.paquetexpress.mx:8083/wsReportPaquetexpress/GenCartaPorte?trackingNoGen=",
+  "urlZpl": "http://qaglp.paquetexpress.mx:7007/RadRestFul/api/rad/v1/infotrack",
+  "user": "WSP4009",
+  "pwd": "MTIzNA=="
+}

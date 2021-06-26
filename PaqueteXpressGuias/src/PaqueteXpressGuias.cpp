@@ -23,6 +23,7 @@ int main(int argc, char* argv[])
 		showUsage();
 		return 1;
 	}
+	ConsoleColor console;
 	auto start = std::chrono::high_resolution_clock::now();
 	auto& settings = Settings::getInstance();
 	try {
@@ -31,17 +32,28 @@ int main(int argc, char* argv[])
 		settings.addSetting("formatoEtiqueta", argv[2]);
 		settings.addSetting("directorioSalida", argv[3]);
 		std::string response{};
+
 		std::cout << "Solicitando token...\n";
 		std::string token = requestLogin(settings.getValue<std::string>("urlLogin"),
 			settings.getValue<std::string>("user"),
 			settings.getValue<std::string>("pwd"));
-		std::cout << "Token obtenido ok\n";
+		std::cout << ConsoleColor::foregroundGreen;
+		std::cout << "\tToken obtenido ok\n";
+		std::cout << ConsoleColor::foregroundDefault;
+
 		std::cout << "Solicitando carta porte...\n";
 		auto info = requestCarta(token, settings.getValue<std::string>("urlCarta"),
 			settings.getValue<std::string>("archivoJson"));
-		std::cout << "Carta porte obtenida\n";
-		std::cout << "Rastreo:\t" << info.rastreo << "\n";
-		std::cout << "Folio:  \t" << info.folio << "\n";
+		std::cout << ConsoleColor::foregroundGreen;
+		std::cout << "\tCarta porte obtenida\n";
+		std::cout << ConsoleColor::foregroundDefault;
+
+		std::cout << "Rastreo:\t" << ConsoleColor::foregroundGreen <<
+			info.rastreo << ConsoleColor::foregroundDefault << "\n";
+		std::cout << "Folio:  \t" << ConsoleColor::foregroundGreen
+			<< info.folio << ConsoleColor::foregroundDefault << "\n";
+		Logger::logToAir(settings.getValue<std::string>("archivoJson"), info.rastreo, settings.getValue<std::string>("directorioSalida"));
+		Logger::logHistory(settings.getValue<std::string>("archivoJson"), info.rastreo, settings.getValue<std::string>("directorioSalida"));
 		if (settings.getValue<std::string>("formatoEtiqueta") == "ZPL") {
 			std::cout << "Obteniendo ZPL...\n";
 			auto zpl = requestZPL(settings.getValue<std::string>("urlZpl"), token, info.rastreo,
@@ -56,11 +68,16 @@ int main(int argc, char* argv[])
 				settings.getValue<std::string>("directorioSalida"), pdf);
 		}
 		auto end = std::chrono::high_resolution_clock::now();
-		std::cout << "Total time: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
-			<< " ms\n";
+		float total = (std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()) / 1'000.0f;
+		std::cout << std::setprecision(2);
+		std::cout << "Tiempo: " << total << " segundos\n";
 	}
 	catch (std::exception& ex) {
-		std::cout << ex.what() << "\n";
+		Logger::logError(argv[1], argv[3],
+			ex.what());
+		std::cout << ConsoleColor::foregroundRed;
+		std::cout << "\t" << ex.what() << "\n";
+		std::cout << ConsoleColor::foregroundDefault;
 	}
 }
 
@@ -101,42 +118,37 @@ std::string requestZPL(std::string url, std::string token, std::string rastreo, 
 	bool verbose = false;
 #endif // DEBUG
 	ZPLData zplData{};
-	try {
-		std::string json{ R"({"header": { "security": {"token": ")" };
-		json += token;
-		json += R"(","user": ")";
-		json += user;
-		json += R"(","password":")";
-		json += pwd;
-		json += R"("}},"body": {"request": {"data": {"header": {},"solicitudEnvio": {"datosAdicionales": {
-                        "datoAdicional": [{"claveDataAd": "getZPL","valorDataAd": "1"}]},"rastreo": ")";
-		json += rastreo;
-		json += R"("}}}}})";
-		HTTPRequester httpRequester{ url };
-		httpRequester.setRequestType(RequestType::POST);
-		httpRequester.setContentType("application/json");
-		httpRequester.setContent(json);
-		std::string response{};
-		auto res = httpRequester.Request(response, verbose);
 
-		if (res == Poco::Net::HTTPResponse::HTTPStatus::HTTP_OK) {
-			JSONParser parser;
-			zplData = parser.PaserZPL(response);
-			if (!zplData.success) {
-				std::string messageError{ "Error al obtener ZPL" };
-				messageError += zplData.error;
-				throw messageError;
-			}
-		}
-		else {
-			std::string messageError{ "Error obteniendo codigo ZPL" };
-			messageError += res;
-			throw messageError;
+	std::string json{ R"({"header": { "security": {"token": ")" };
+	json += token;
+	json += R"(","user": ")";
+	json += user;
+	json += R"(","password":")";
+	json += pwd;
+	json += R"("}},"body": {"request": {"data": {"header": {},"solicitudEnvio": {"datosAdicionales": {
+                        "datoAdicional": [{"claveDataAd": "getZPL","valorDataAd": "1"}]},"rastreo": ")";
+	json += rastreo;
+	json += R"("}}}}})";
+	HTTPRequester httpRequester{ url };
+	httpRequester.setRequestType(RequestType::POST);
+	httpRequester.setContentType("application/json");
+	httpRequester.setContent(json);
+	std::string response{};
+	auto res = httpRequester.Request(response, verbose);
+
+	if (res == Poco::Net::HTTPResponse::HTTPStatus::HTTP_OK) {
+		JSONParser parser;
+		zplData = parser.PaserZPL(response);
+		if (!zplData.success) {
+			std::string messageError{ "Error al obtener ZPL " };
+			messageError += zplData.error;
+			throw std::exception{ messageError.c_str() };
 		}
 	}
-	catch (std::exception& ex) {
-		std::string messageError{ "Error obteniendo codigo ZPL" };
-		throw messageError;
+	else {
+		std::string messageError{ "Error obteniendo codigo ZPL " };
+		messageError += HTTPRequester::getReasonForStatus(res);
+		throw std::exception{ messageError.c_str() };
 	}
 	return zplData.zpl;
 }
@@ -160,8 +172,8 @@ std::string requestPDF(std::string url, std::string rastreo, std::string type) {
 	}
 	else {
 		std::string messageError{ "Error al obtener PDF " };
-		messageError += res;
-		throw messageError;
+		messageError += HTTPRequester::getReasonForStatus(res);
+		throw std::exception{ messageError.c_str() };
 	}
 }
 
@@ -174,37 +186,29 @@ std::string requestLogin(std::string url, std::string user, std::string pwd) {
 #else
 	bool verbose = false;
 #endif // DEBUG
-
-	try {
-		HTTPRequester httpRequester{ url };
-		httpRequester.setRequestType(RequestType::POST);
-		httpRequester.setContentType("application/json");
-		std::string dataLogin{ R"({"header": { "security": { "user": ")" };
-		dataLogin += user;
-		dataLogin += R"(", "password": " )";
-		dataLogin += pwd;
-		dataLogin += R"("}}})";
-		httpRequester.setContent(dataLogin);
-		auto res = httpRequester.Request(response, verbose);
-		if (res == Poco::Net::HTTPResponse::HTTPStatus::HTTP_OK) {
-			JSONParser parser;
-			loginInfo = parser.ParseLogin(response);
-			if (!loginInfo.success) {
-				std::string messageError{ "Login no exitoso " };
-				messageError += loginInfo.error;
-				throw messageError;
-			}
-		}
-		else {
-			std::string messageError{ "Login rechazado " };
-			messageError += res;
-			throw messageError;
+	HTTPRequester httpRequester{ url };
+	httpRequester.setRequestType(RequestType::POST);
+	httpRequester.setContentType("application/json");
+	std::string dataLogin{ R"({"header": { "security": { "user": ")" };
+	dataLogin += user;
+	dataLogin += R"(", "password": " )";
+	dataLogin += pwd;
+	dataLogin += R"("}}})";
+	httpRequester.setContent(dataLogin);
+	auto res = httpRequester.Request(response, verbose);
+	if (res == Poco::Net::HTTPResponse::HTTPStatus::HTTP_OK) {
+		JSONParser parser;
+		loginInfo = parser.ParseLogin(response);
+		if (!loginInfo.success) {
+			std::string messageError{ "Login no exitoso " };
+			messageError += loginInfo.error;
+			throw std::exception{ messageError.c_str() };
 		}
 	}
-	catch (std::exception& ex) {
-		std::string messageError{ "Error al hacer login" };
-		messageError += ex.what();
-		throw messageError;
+	else {
+		std::string messageError{ "Login rechazado " };
+		messageError += HTTPRequester::getReasonForStatus(res);
+		throw std::exception{ messageError.c_str() };
 	}
 	return loginInfo.token;
 }
@@ -216,34 +220,28 @@ CartaData requestCarta(std::string token, std::string url, std::string file) {
 #else
 	bool verbose = false;
 #endif // DEBUG
-	try {
-		JSONParser parser;
-		std::string response{};
-		HTTPRequester httpRequester{ url };
-		httpRequester.setRequestType(RequestType::POST);
-		httpRequester.setContentType("application/json");
-		auto content = getDataFromFile(file);
-		if (content.empty()) throw "Archivo json invalido";
-		auto updatedContent = parser.UpdateToken(content, token);
-		httpRequester.setContent(updatedContent);
-		auto res = httpRequester.Request(response, verbose);
-		if (res == Poco::Net::HTTPResponse::HTTPStatus::HTTP_OK) {
-			cartaInfo = parser.ParseCarta(response);
-			if (!cartaInfo.success) {
-				std::string messageError{ "Carta porte denegada " };
-				messageError += cartaInfo.error;
-				throw messageError;
-			}
-		}
-		else {
-			std::string messageError{ "Solicitud de carta porte rechazada " };
-			messageError += res;
+
+	JSONParser parser;
+	std::string response{};
+	HTTPRequester httpRequester{ url };
+	httpRequester.setRequestType(RequestType::POST);
+	httpRequester.setContentType("application/json");
+	auto content = getDataFromFile(file);
+	if (content.empty()) throw "Archivo json invalido";
+	auto updatedContent = parser.UpdateToken(content, token);
+	httpRequester.setContent(updatedContent);
+	auto res = httpRequester.Request(response, verbose);
+	if (res == Poco::Net::HTTPResponse::HTTPStatus::HTTP_OK) {
+		cartaInfo = parser.ParseCarta(response);
+		if (!cartaInfo.success) {
+			std::string messageError{ "Carta porte denegada " };
+			messageError += cartaInfo.error;
 			throw messageError;
 		}
 	}
-	catch (std::exception& ex) {
-		std::string messageError{ "Error al solicitar carta porte " };
-		messageError += ex.what();
+	else {
+		std::string messageError{ "Solicitud de carta porte rechazada " };
+		messageError += HTTPRequester::getReasonForStatus(res);
 		throw messageError;
 	}
 	return cartaInfo;

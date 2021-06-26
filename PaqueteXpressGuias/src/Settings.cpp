@@ -12,8 +12,7 @@ void Settings::loadSettingsFromJson(std::string filename)
 {
 	auto data = getData(filename);
 	if (data.empty()) {
-		std::exception ex{ "Error cargando opciones desde archivo JSON" };
-		throw ex;
+		throw std::exception{ "Error cargando opciones desde archivo JSON" };
 	}
 	Poco::JSON::Parser parser;
 	Poco::Dynamic::Var parseResult = parser.parse(data);

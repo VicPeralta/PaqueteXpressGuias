@@ -16,7 +16,7 @@ std::string requestZPL(std::string url, std::string token, std::string rastreo, 
 std::string requestPDF(std::string url, std::string rastreo, std::string type);
 std::string requestLogin(std::string url, std::string user, std::string pwd);
 CartaData requestCarta(std::string token, std::string url, std::string file);
-
+void validaOpciones();
 int main(int argc, char* argv[])
 {
 	if (argc != 4) {
@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
 		settings.addSetting("formatoEtiqueta", argv[2]);
 		settings.addSetting("directorioSalida", argv[3]);
 		std::string response{};
-
+		validaOpciones();
 		std::cout << "Solicitando token...\n";
 		std::string token = requestLogin(settings.getValue<std::string>("urlLogin"),
 			settings.getValue<std::string>("user"),
@@ -118,7 +118,6 @@ std::string requestZPL(std::string url, std::string token, std::string rastreo, 
 	bool verbose = false;
 #endif // DEBUG
 	ZPLData zplData{};
-
 	std::string json{ R"({"header": { "security": {"token": ")" };
 	json += token;
 	json += R"(","user": ")";
@@ -135,7 +134,6 @@ std::string requestZPL(std::string url, std::string token, std::string rastreo, 
 	httpRequester.setContent(json);
 	std::string response{};
 	auto res = httpRequester.Request(response, verbose);
-
 	if (res == Poco::Net::HTTPResponse::HTTPStatus::HTTP_OK) {
 		JSONParser parser;
 		zplData = parser.PaserZPL(response);
@@ -227,7 +225,10 @@ CartaData requestCarta(std::string token, std::string url, std::string file) {
 	httpRequester.setRequestType(RequestType::POST);
 	httpRequester.setContentType("application/json");
 	auto content = getDataFromFile(file);
-	if (content.empty()) throw "Archivo json invalido";
+	if (content.empty()) {
+		std::string messageError{ "Archivo json invalido" };
+		throw std::exception{ messageError.c_str() };
+	}
 	auto updatedContent = parser.UpdateToken(content, token);
 	httpRequester.setContent(updatedContent);
 	auto res = httpRequester.Request(response, verbose);
@@ -236,13 +237,35 @@ CartaData requestCarta(std::string token, std::string url, std::string file) {
 		if (!cartaInfo.success) {
 			std::string messageError{ "Carta porte denegada " };
 			messageError += cartaInfo.error;
-			throw messageError;
+			throw std::exception{ messageError.c_str() };
 		}
 	}
 	else {
 		std::string messageError{ "Solicitud de carta porte rechazada " };
 		messageError += HTTPRequester::getReasonForStatus(res);
-		throw messageError;
+		throw std::exception{ messageError.c_str() };
 	}
 	return cartaInfo;
+}
+
+void validaOpciones() {
+	Settings& settings = Settings::getInstance();
+	if (!std::filesystem::exists(settings.getValue<std::string>("archivoJson"))) {
+		std::string errorMessage{"No existe el archivo especificado"};
+			throw std::exception{errorMessage.c_str()};
+	}
+	if (!std::filesystem::exists(settings.getValue<std::string>("directorioSalida"))) {
+		std::string errorMessage{ "No se puede acceder al directorio de salida indicado" };
+		throw std::exception{ errorMessage.c_str() };
+	}
+	std::filesystem::path p{ settings.getValue<std::string>("directorioSalida") };
+	p.replace_filename("tempo.tmp");
+	std::ofstream os{ p };
+	if (!os.good()) {
+		os.close();
+		std::string errorMessage{ "No se puede escribir al directorio de salida indicado" };
+		throw std::exception{ errorMessage.c_str() };
+	}
+	os.close();
+
 }

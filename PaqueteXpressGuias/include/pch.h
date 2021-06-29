@@ -9,4 +9,17 @@
 
 // agregue aquí los encabezados que desea precompilar
 // #include "utils.h"
+#include "Poco\JSON\Parser.h"
+#include "Poco\SharedPtr.h"
+#include "Poco\JSON\Object.h"
+#include "Poco\JSON\JSONException.h"
+#include "Poco/Dynamic/Var.h"
+
+#include "Poco\Net\HTTPClientSession.h"
+#include "Poco\Net\HTTPRequest.h"
+#include "Poco\Net\HTTPResponse.h"
+#include "Poco\URI.h"
+
+#include <filesystem>
+
 #endif //PCH_H

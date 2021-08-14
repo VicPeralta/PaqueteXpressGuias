@@ -17,6 +17,10 @@ std::string requestPDF(std::string url, std::string rastreo, std::string type);
 std::string requestLogin(std::string url, std::string user, std::string pwd);
 CartaData requestCarta(std::string token, std::string url, std::string file);
 void validaOpciones();
+
+/*
+PaqueteXpressGuias.exe [Archivo JSON] [Formato etiqueta] [Ruta salida]
+*/
 int main(int argc, char* argv[])
 {
 	if (argc != 4) {
@@ -27,7 +31,7 @@ int main(int argc, char* argv[])
 	auto start = std::chrono::high_resolution_clock::now();
 	auto& settings = Settings::getInstance();
 	try {
-		settings.loadSettingsFromJson("config.json");
+		settings.loadSettingsFromJson(R"(c:\wms\PaqueteExp\ejecutable\config.json)");
 		settings.addSetting("archivoJson", argv[1]);
 		settings.addSetting("formatoEtiqueta", argv[2]);
 		settings.addSetting("directorioSalida", argv[3]);
@@ -149,7 +153,7 @@ std::string requestZPL(std::string url, std::string token, std::string rastreo, 
 		throw std::exception{ messageError.c_str() };
 	}
 	return zplData.zpl;
-}
+	}
 
 std::string requestPDF(std::string url, std::string rastreo, std::string type) {
 #ifdef _DEBUG
@@ -251,8 +255,8 @@ CartaData requestCarta(std::string token, std::string url, std::string file) {
 void validaOpciones() {
 	Settings& settings = Settings::getInstance();
 	if (!std::filesystem::exists(settings.getValue<std::string>("archivoJson"))) {
-		std::string errorMessage{"No existe el archivo especificado"};
-			throw std::exception{errorMessage.c_str()};
+		std::string errorMessage{ "No existe el archivo especificado" };
+		throw std::exception{ errorMessage.c_str() };
 	}
 	if (!std::filesystem::exists(settings.getValue<std::string>("directorioSalida"))) {
 		std::string errorMessage{ "No se puede acceder al directorio de salida indicado" };
